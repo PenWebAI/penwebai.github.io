@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PenWebAI | Autonomous Offensive Security</title>
+    <meta name="description" content="PenWebAI creates autonomous AI agents for security research, pentesting, and offensive security operations.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beige: '#0a0a0a', // Changed to dark
+                        dark: '#ffffff', // Changed to light
+                        accent: '#ffffff', // Changed to white for monochrome
+                        secondary: '#666666',
+                        surface: '#111111'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .grayscale-img {
+            filter: grayscale(100%);
+        }
+        /* Glitch Effect */
+        .glitch-text {
+            position: relative;
+        }
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(30px, 9999px, 10px, 0); }
+            5% { clip: rect(80px, 9999px, 90px, 0); }
+            10% { clip: rect(10px, 9999px, 40px, 0); }
+            15% { clip: rect(50px, 9999px, 20px, 0); }
+            20% { clip: rect(10px, 9999px, 80px, 0); }
+            100% { clip: rect(60px, 9999px, 30px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(10px, 9999px, 80px, 0); }
+            5% { clip: rect(30px, 9999px, 10px, 0); }
+            10% { clip: rect(80px, 9999px, 90px, 0); }
+            15% { clip: rect(50px, 9999px, 20px, 0); }
+            20% { clip: rect(10px, 9999px, 40px, 0); }
+            100% { clip: rect(30px, 9999px, 60px, 0); }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-accent selection:text-white">
+
+    <div id="canvas-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 left-0 transition-all duration-300 py-6 px-6 md:px-12 flex justify-between items-center glass-panel">
+        <a href="#" class="font-display font-bold text-2xl tracking-tighter hover:text-accent transition-colors">PenWebAI</a>
+        <div>
+            <a href="blog/index.html" class="font-display font-medium text-lg hover:text-accent transition-colors relative group">
+                Blog
+                <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="min-h-screen flex flex-col justify-center items-center px-6 relative pt-20">
+        <div class="max-w-5xl w-full mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <div class="order-2 md:order-1 space-y-8">
+                <div class="inline-block px-3 py-1 border border-white/20 rounded-full text-sm font-medium tracking-wide uppercase text-secondary mb-4">
+                    Autonomous Security
+                </div>
+                <h1 class="font-display text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter">
+                    Exploring <br>
+                    <span class="text-white glitch-text" data-text="Autonomous Security">Autonomous Security</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-secondary max-w-lg leading-relaxed font-light">
+                    We are a small team researching AI agents for offensive security. Currently developing our first whitebox pentesting prototype.
+                </p>
+                <div class="pt-4">
+                    <a href="#who-we-are" class="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-none font-display font-bold text-lg hover:bg-gray-200 transition-all duration-300 group">
+                        Our Vision
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div class="order-1 md:order-2 flex justify-center md:justify-end relative">
+                <div class="relative w-64 h-64 md:w-96 md:h-96">
+                    <div class="absolute inset-0 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
+                    <img src="./logo.png" alt="PenWebAI Logo" class="relative z-10 w-full h-full object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-500 grayscale-img">
+                </div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </div>
+    </header>
+
+    <!-- Who We Are -->
+    <section id="who-we-are" class="py-32 px-6 bg-surface text-white relative overflow-hidden border-t border-white/5">
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 pointer-events-none"></div>
+        
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="grid md:grid-cols-2 gap-16 items-start">
+                <div>
+                    <h2 class="font-display text-4xl md:text-6xl font-bold mb-8 tracking-tighter">Who We Are</h2>
+                    <div class="h-1 w-20 bg-white mb-8"></div>
+                </div>
+                <div class="space-y-8 text-lg md:text-xl font-light leading-relaxed text-gray-400">
+                    <p>
+                        We are a small team of security enthusiasts and developers exploring the intersection of AI and cybersecurity.
+                    </p>
+                    <p>
+                        We don't have a commercial product yet. Instead, we are focused on research and development, building our first <span class="text-white font-medium">experimental agent</span> designed to assist in whitebox pentesting tasks.
+                    </p>
+                    <p>
+                        Our goal is to learn, experiment, and eventually contribute to the future of automated security testing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Research -->
+    <section class="py-20 px-6 bg-black border-t border-white/5 relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-20"></div>
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+                <div>
+                    <span class="text-accent font-display font-bold tracking-widest uppercase text-sm mb-2 block">Latest from the Lab</span>
+                    <h2 class="font-display text-4xl md:text-5xl font-bold tracking-tighter">Engineering Log</h2>
+                </div>
+                <a href="blog/index.html" class="hidden md:inline-flex items-center text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors mt-4 md:mt-0">
+                    View Archive
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </a>
+            </div>
+
+            <a href="blog/how-we-can-rag-a-large-codebase.html" class="group block">
+                <div class="relative bg-surface border border-white/10 p-8 md:p-12 transition-all duration-500 hover:border-white/30 hover:bg-white/5">
+                    <div class="absolute top-0 right-0 p-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white transform group-hover:rotate-45 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 mb-6 text-sm font-medium text-secondary">
+                        <span class="text-accent">NEW</span>
+                        <span class="w-1 h-1 bg-white/30 rounded-full"></span>
+                        <span>November 24, 2025</span>
+                        <span class="w-1 h-1 bg-white/30 rounded-full"></span>
+                        <span class="text-white uppercase tracking-wider text-xs">AI Engineering</span>
+                    </div>
+                    
+                    <h3 class="font-display text-3xl md:text-5xl font-bold mb-6 group-hover:text-white transition-colors leading-tight">
+                        How to RAG Large Codebases: <br>
+                        <span class="text-gray-500 group-hover:text-gray-300 transition-colors">Indexing a Lot of Code Files</span>
+                    </h3>
+                    
+                    <p class="text-xl text-secondary font-light max-w-3xl mb-8 group-hover:text-gray-400 transition-colors">
+                        Why simple text splitting fails for code, and how we use ASTs and Dependency Graphs to build smarter retrieval systems.
+                    </p>
+                    
+                    <div class="inline-flex items-center text-white font-bold tracking-wide uppercase text-sm group-hover:translate-x-2 transition-transform">
+                        Read Article
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Methodology Section (New) -->
+    <section class="py-32 px-6 bg-black border-t border-white/5">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-20">
+                <span class="text-white/50 font-display font-bold tracking-widest uppercase text-sm">Our Approach</span>
+                <h2 class="font-display text-4xl md:text-6xl font-bold mt-4 tracking-tighter">The Cognitive Loop</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="p-6 border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                    <div class="text-4xl font-bold text-white/20 mb-4">01</div>
+                    <h3 class="text-xl font-bold mb-2">Observe</h3>
+                    <p class="text-secondary text-sm">Ingest codebase, map dependencies, and identify entry points.</p>
+                </div>
+                <div class="p-6 border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                    <div class="text-4xl font-bold text-white/20 mb-4">02</div>
+                    <h3 class="text-xl font-bold mb-2">Orient</h3>
+                    <p class="text-secondary text-sm">Build a mental model of application logic and potential attack surfaces.</p>
+                </div>
+                <div class="p-6 border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                    <div class="text-4xl font-bold text-white/20 mb-4">03</div>
+                    <h3 class="text-xl font-bold mb-2">Decide</h3>
+                    <p class="text-secondary text-sm">Formulate hypotheses and select optimal exploitation strategies.</p>
+                </div>
+                <div class="p-6 border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
+                    <div class="text-4xl font-bold text-white/20 mb-4">04</div>
+                    <h3 class="text-xl font-bold mb-2">Act</h3>
+                    <p class="text-secondary text-sm">Execute proof-of-concept exploits and validate findings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Team -->
+    <section class="py-20 px-6 bg-surface border-t border-white/5">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-12">
+                <h2 class="font-display text-3xl md:text-5xl font-bold tracking-tighter">The Team</h2>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Team Member: Davi1337 -->
+                <div class="group">
+                    <div class="relative overflow-hidden rounded-lg mb-4 aspect-square bg-white/5 border border-white/10">
+                        <img src="./me.png" alt="Davi1337" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 opacity-80 group-hover:opacity-100">
+                    </div>
+                    <h3 class="font-display text-2xl font-bold">Davi1337</h3>
+                    <p class="text-white/60 font-medium text-sm uppercase tracking-wider mb-2">Founder & Researcher</p>
+                    <p class="text-secondary text-sm leading-relaxed">
+                        A young enthusiast passionate about Artificial Intelligence and Offensive Security. Dedicated to exploring how autonomous agents can revolutionize vulnerability research.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Current Focus -->
+    <section class="py-32 px-6 relative border-t border-white/5">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="order-2 md:order-1">
+                    <h2 class="font-display text-3xl md:text-5xl font-bold mb-6 tracking-tighter">Multi-Agent Architecture</h2>
+                    <p class="text-lg text-secondary leading-relaxed mb-6">
+                        We are designing a sophisticated multi-agent system where specialized agents collaborate to solve complex security challenges.
+                    </p>
+                    <ul class="space-y-4 mb-8 text-secondary">
+                        <li class="flex items-start">
+                            <span class="text-white mr-2">→</span>
+                            <span><strong>Supervisor Agent:</strong> Orchestrates the workflow, managing communication between specialized units.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-white mr-2">→</span>
+                            <span><strong>Exploitation Agent:</strong> Uses Tree of Thoughts (ToT) to generate and validate exploit hypotheses dynamically.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-white mr-2">→</span>
+                            <span><strong>Threat Modeller:</strong> Analyzes the attack surface and generates strategic insights for the exploitation team.</span>
+                        </li>
+                    </ul>
+                    <p class="text-lg font-medium text-white">
+                        Our ultimate vision is to open-source this architecture, empowering the community to build safer software together.
+                    </p>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div class="relative rounded-lg overflow-hidden shadow-2xl border border-white/10 group bg-black p-2">
+                        <img src="./agent.png" alt="Multi-Agent Architecture Diagram" class="w-full h-auto transform group-hover:scale-[1.02] transition-transform duration-500 grayscale invert">
+                    </div>
+                    <p class="text-center text-xs text-secondary mt-4 uppercase tracking-widest">System Architecture Diagram</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section (New) -->
+    <section class="py-32 px-6 bg-surface border-t border-white/5">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="font-display text-3xl md:text-5xl font-bold mb-12 tracking-tighter text-center">Common Questions</h2>
+            
+            <div class="space-y-6">
+                <div class="border-b border-white/10 pb-6">
+                    <h3 class="text-xl font-bold mb-2">Is this a commercial product?</h3>
+                    <p class="text-secondary">Not yet. We are currently in the research and prototyping phase, focusing on proving the capability of autonomous agents in whitebox environments.</p>
+                </div>
+                <div class="border-b border-white/10 pb-6">
+                    <h3 class="text-xl font-bold mb-2">How is this different from SAST tools?</h3>
+                    <p class="text-secondary">SAST tools rely on pattern matching. Our agents use LLMs to understand context, logic, and intent, allowing them to find complex business logic flaws and validate them with working exploits.</p>
+                </div>
+                <div class="border-b border-white/10 pb-6">
+                    <h3 class="text-xl font-bold mb-2">Will it be open source?</h3>
+                    <p class="text-secondary">Yes, our goal is to contribute to the security community by open-sourcing our core architecture and agent frameworks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-beige py-12 border-t border-white/10">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0">
+                <span class="font-display font-bold text-2xl">PenWebAI</span>
+                <p class="text-gray-400 text-sm mt-2">© 2025 PenWebAI. All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://x.com/davi1337_" class="text-gray-400 hover:text-accent transition-colors">Twitter</a>
+                <a href="https://github.com/PenWebAI" class="text-gray-400 hover:text-accent transition-colors">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Three.js Animation Script -->
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Create particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 70;
+        
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 15; // Spread
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        
+        // Material
+        const material = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0xffffff, // White particles
+            transparent: true,
+            opacity: 0.4,
+        });
+        
+        // Mesh
+        const particlesMesh = new THREE.Points(particlesGeometry, material);
+        scene.add(particlesMesh);
+
+        // Lines connecting particles
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.05
+        });
+
+        // Mouse interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX);
+            mouseY = (event.clientY - windowHalfY);
+        });
+
+        camera.position.z = 4;
+
+        // Animation Loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            targetX = mouseX * 0.001;
+            targetY = mouseY * 0.001;
+
+            const elapsedTime = clock.getElapsedTime();
+
+            particlesMesh.rotation.y = .2 * elapsedTime;
+            particlesMesh.rotation.x += .05 * (targetY - particlesMesh.rotation.x);
+            particlesMesh.rotation.y += .05 * (targetX - particlesMesh.rotation.y);
+
+            // Dynamic lines
+            // We need to recreate lines every frame or update them for a "network" effect
+            // For performance, let's just rotate the point cloud which looks cool enough
+            // Or we can add a secondary mesh for more depth
+
+            renderer.render(scene, camera);
+            window.requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

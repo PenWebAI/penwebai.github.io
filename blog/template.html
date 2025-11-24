@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defining the Architecture of Agent 01 | PenWebAI Blog</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beige: '#0a0a0a', // Changed to dark
+                        dark: '#ffffff', // Changed to light
+                        accent: '#ffffff', // Changed to white for monochrome
+                        secondary: '#666666',
+                        surface: '#111111'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Typography for blog content */
+        .prose p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: #cccccc;
+        }
+        .prose h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .prose h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #cccccc;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
+        .prose strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .prose code {
+            background-color: #1a1a1a;
+            padding: 0.2em 0.4em;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+        .prose pre {
+            background-color: #111111;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border: 1px solid #333;
+        }
+        .prose pre code {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-accent selection:text-white">
+
+    <!-- Navigation -->
+        <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 left-0 transition-all duration-300 py-6 px-6 md:px-12 flex justify-between items-center glass-panel">
+        <a href="../index.html" class="font-display font-bold text-2xl tracking-tighter hover:text-white transition-colors">PenWebAI</a>
+        <div>
+            <a href="index.html" class="font-display font-medium text-lg hover:text-white transition-colors relative group">
+                Blog
+                <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="pt-40 pb-12 px-6 text-center relative overflow-hidden">
+        <!-- Background decorative element -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-white/5 blur-[100px] rounded-full pointer-events-none"></div>
+        
+        <div class="max-w-4xl mx-auto relative z-10">
+            <div class="flex items-center justify-center gap-4 mb-6 text-sm font-medium text-secondary">
+                <span>{{DATE}}</span>
+                <span class="w-1 h-1 bg-white rounded-full"></span>
+                <span class="text-white uppercase tracking-wider text-xs">{{CATEGORY}}</span>
+            </div>
+            <h1 class="font-display text-4xl md:text-6xl font-bold mb-8 tracking-tighter leading-tight">{{TITLE}}</h1>
+            <p class="text-xl text-secondary font-light max-w-2xl mx-auto">{{SUBTITLE}}</p>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <article class="pb-32 px-6">
+        <div class="max-w-3xl mx-auto prose text-lg text-gray-300 font-light">
+            <!-- Content Placeholder -->
+            <p class="lead">
+                {{INTRODUCTION_PARAGRAPH}}
+            </p>
+            
+            <h2>{{SECTION_HEADING}}</h2>
+            <p>
+                {{CONTENT_PARAGRAPH}}
+            </p>
+            
+            <div class="my-8 p-6 bg-surface border border-white/10 rounded-lg">
+                <h3 class="text-white font-bold mb-2 text-lg">Key Takeaway</h3>
+                <p class="m-0 text-gray-400">{{KEY_TAKEAWAY_TEXT}}</p>
+            </div>
+
+            <!-- Example Code Block Structure -->
+            <pre><code>{{CODE_BLOCK}}</code></pre>
+
+            <div class="mt-12 pt-12 border-t border-white/10">
+                <a href="index.html" class="inline-flex items-center font-display font-bold text-lg hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                    Back to Engineering Log
+                </a>
+            </div>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="bg-surface text-white py-12 border-t border-white/10">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0">
+                <span class="font-display font-bold text-2xl">PenWebAI</span>
+                <p class="text-gray-400 text-sm mt-2">© 2025 PenWebAI. All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://x.com/davi1337_" class="text-gray-400 hover:text-white transition-colors">Twitter</a>
+                <a href="https://github.com/PenWebAI" class="text-gray-400 hover:text-white transition-colors">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Article Header -->
+    <header class="pt-40 pb-12 px-6 text-center">
+        <div class="max-w-3xl mx-auto">
+            <div class="flex items-center justify-center gap-4 mb-6 text-sm font-medium text-secondary">
+                <span>November 24, 2024</span>
+                <span class="w-1 h-1 bg-accent rounded-full"></span>
+                <span class="text-accent uppercase tracking-wider text-xs">Architecture</span>
+            </div>
+            <h1 class="font-display text-4xl md:text-6xl font-bold mb-8 tracking-tighter leading-tight">Defining the Architecture of Agent 01</h1>
+            <p class="text-xl text-secondary font-light max-w-2xl mx-auto">An overview of how we are structuring the cognitive loop for our first whitebox pentesting agent.</p>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <article class="pb-32 px-6">
+        <div class="max-w-2xl mx-auto prose text-lg text-dark/90 font-light">
+            <p>
+                At PenWebAI, we are not just building another vulnerability scanner. We are building an autonomous agent capable of reasoning about code, understanding context, and executing complex exploit chains.
+            </p>
+            <p>
+                The core challenge in whitebox pentesting is not finding the vulnerability—static analysis tools have done that for years. The challenge is <strong>validation</strong> and <strong>contextualization</strong>. A SQL injection in a dead code path is noise. A SQL injection in an admin login panel is critical.
+            </p>
+
+            <h2>The Cognitive Loop</h2>
+            <p>
+                Agent 01 operates on a continuous cognitive loop inspired by OODA (Observe, Orient, Decide, Act).
+            </p>
+            <ul>
+                <li><strong>Observe:</strong> The agent ingests the codebase, mapping out entry points, data flows, and dependencies.</li>
+                <li><strong>Orient:</strong> It builds a mental model of the application's logic, identifying high-value targets (authentication, payment processing, data storage).</li>
+                <li><strong>Decide:</strong> Based on its findings, it formulates hypotheses. "If I manipulate this input, does it reach the sink?"</li>
+                <li><strong>Act:</strong> The agent generates a proof-of-concept exploit to validate the hypothesis.</li>
+            </ul>
+
+            <h2>Why Whitebox?</h2>
+            <p>
+                We started with whitebox (source code access) because it provides the highest fidelity signal for our models. By allowing the agent to "read" the code, we can train it to understand developer intent versus actual implementation.
+            </p>
+            <p>
+                This is just the beginning. As Agent 01 matures, we will be expanding its capabilities to blackbox scenarios, where it must infer logic from external behavior alone.
+            </p>
+            
+            <div class="mt-12 pt-12 border-t border-dark/10">
+                <a href="index.html" class="inline-flex items-center font-display font-bold text-lg hover:text-accent transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                    Back to Engineering Log
+                </a>
+            </div>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-beige py-12 border-t border-white/10">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0">
+                <span class="font-display font-bold text-2xl">PenWebAI</span>
+                <p class="text-gray-400 text-sm mt-2">© 2025 PenWebAI. All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                 <a href="https://x.com/davi1337_" class="text-gray-400 hover:text-accent transition-colors">Twitter</a>
+                <a href="https://github.com/PenWebAI" class="text-gray-400 hover:text-accent transition-colors">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

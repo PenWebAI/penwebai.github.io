@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to RAG Large Codebases | PenWebAI Blog</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beige: '#0a0a0a', // Changed to dark
+                        dark: '#ffffff', // Changed to light
+                        accent: '#ffffff', // Changed to white for monochrome
+                        secondary: '#666666',
+                        surface: '#111111'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Typography for blog content */
+        .prose p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: #cccccc;
+        }
+        .prose h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+        .prose h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #cccccc;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
+        .prose strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .prose code {
+            background-color: #1a1a1a;
+            padding: 0.2em 0.4em;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+        .prose pre {
+            background-color: #111111;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border: 1px solid #333;
+        }
+        .prose pre code {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-accent selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 left-0 transition-all duration-300 py-6 px-6 md:px-12 flex justify-between items-center glass-panel">
+        <a href="../index.html" class="font-display font-bold text-2xl tracking-tighter hover:text-white transition-colors">PenWebAI</a>
+        <div>
+            <a href="index.html" class="font-display font-medium text-lg hover:text-white transition-colors relative group">
+                Blog
+                <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Article Header -->
+    <header class="pt-40 pb-12 px-6 text-center">
+        <div class="max-w-3xl mx-auto">
+            <div class="flex items-center justify-center gap-4 mb-6 text-sm font-medium text-secondary">
+                <span>November 24, 2025</span>
+                <span class="w-1 h-1 bg-white rounded-full"></span>
+                <span class="text-white uppercase tracking-wider text-xs">AI Engineering</span>
+            </div>
+            <h1 class="font-display text-4xl md:text-6xl font-bold mb-8 tracking-tighter leading-tight">How to RAG Large Codebases: Indexing a Lot of Code Files</h1>
+            <p class="text-xl text-secondary font-light max-w-2xl mx-auto">Why simple text splitting fails for code, and how we use ASTs and Dependency Graphs to build smarter retrieval systems.</p>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <article class="pb-32 px-6">
+        <div class="max-w-3xl mx-auto prose text-lg text-gray-300 font-light">
+            
+            <p class="lead text-xl text-white font-normal mb-8">
+                We hit a wall. We built a standard RAG pipeline for our security agent, fed it a million lines of Python, and asked it to find a vulnerability. It failed. Not because the model was dumb, but because we were feeding it garbage.
+            </p>
+
+            <h2>The "Ctrl+F" Problem</h2>
+            <p>
+                Standard RAG is essentially a fancy Ctrl+F. You chop documents into 500-word blocks, index them, and hope that when you search for "auth bypass," you get the right block.
+            </p>
+            <p>
+                But code isn't a flat text document. It's a living organism of dependencies. If you slice a function in half because you hit the 500-word limit, you've lobotomized the context. We realized that to make an AI truly understand code, we had to stop treating code like literature and start treating it like a graph.
+            </p>
+
+            <h2>Phase 1: The Map (ASTs & Graphs)</h2>
+            <p>
+                We threw out the text splitters. Instead, we built a parser that thinks like a compiler. We use <strong>Abstract Syntax Trees (ASTs)</strong> to understand the anatomy of the code.
+            </p>
+            <p>
+                When our system ingests a file, it doesn't see lines of text. It sees nodes. It identifies a class, captures its methods as children, and links them. Then, we build a <strong>Dependency Graph</strong>. If `auth.py` imports `hashing.py`, we forge a hard link between them.
+            </p>
+            <p>
+                This means when the agent looks at a function, it doesn't just see the code—it sees the entire nervous system connected to that code.
+            </p>
+
+            <h2>Phase 2: The Compass (Hybrid Retrieval)</h2>
+            <p>
+                We also realized that vector search (semantic similarity) is terrible at exact variable names. If you search for `user_id_v2`, a vector model might give you `customer_identifier` because they mean the same thing. But in code, `user_id_v2` is a specific variable, and if you miss it, the code breaks.
+            </p>
+            <p>
+                We implemented a hybrid system. We use <strong>BM25</strong> for exact keyword precision ("Find me this exact variable") and <strong>Vector Embeddings</strong> for conceptual understanding ("Find me authentication logic"). Merging these two signals gave us the best of both worlds.
+            </p>
+
+            <h2>Phase 3: Making the LLM Shine (The Agentic Shift)</h2>
+            <p>
+                This was our biggest breakthrough. Initially, we tried to do all the retrieval work <em>for</em> the LLM. We'd find the "best" chunks and paste them into the prompt.
+            </p>
+            <p>
+                <strong>We were wrong.</strong>
+            </p>
+            <p>
+                We realized that pre-fetching context is a guessing game. We don't know what the LLM needs to solve a complex bug. So, we stopped guessing. We gave the LLM eyes and hands.
+            </p>
+
+            <h3>The Active Investigator</h3>
+            <p>
+                Instead of a static prompt, we built an Agent with access to a suite of custom tools that let it traverse the codebase dynamically.
+            </p>
+
+            <div class="my-8 p-6 bg-surface border border-white/10 rounded-lg">
+                <h3 class="text-white font-bold mb-4 text-lg">The Toolset</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <code class="text-sm bg-white/10 text-white px-2 py-1 rounded mr-3 mt-1">inspect_ast(node_id)</code>
+                        <span>Allows the agent to "expand" a node. It can choose to look inside a function body or collapse it to see just the signature.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <code class="text-sm bg-white/10 text-white px-2 py-1 rounded mr-3 mt-1">trace_dependency(symbol)</code>
+                        <span>The agent can click "Go to Definition." If it sees a function call it doesn't understand, it fetches the source code for that function instantly.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <code class="text-sm bg-white/10 text-white px-2 py-1 rounded mr-3 mt-1">generate_embedding_weight(context)</code>
+                        <span>This is the magic. The agent can analyze a code block and assign importance weights to different parts. It can say, "This error handling block is noise, weight it 0.1," or "This validation logic is critical, weight it 1.5."</span>
+                    </li>
+                </ul>
+            </div>
+
+            <p>
+                Now, when we ask the agent to find a vulnerability, it doesn't just read a static report. It <strong>explores</strong>.
+            </p>
+            <p>
+                It might start at the `login()` function. It sees a call to `verify_password()`. It uses `trace_dependency` to jump to that file. It notices a weird import, uses `inspect_ast` to check the module level variables. It builds its own context window, piece by piece, driven by its own reasoning.
+            </p>
+            <p>
+                This shift from "Passive RAG" to "Agentic Exploration" turned our system from a document search engine into a true autonomous engineer.
+            </p>
+            
+            <div class="mt-12 pt-12 border-t border-white/10">
+                <a href="index.html" class="inline-flex items-center font-display font-bold text-lg hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                    Back to Engineering Log
+                </a>
+            </div>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="bg-surface text-white py-12 border-t border-white/10">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0">
+                <span class="font-display font-bold text-2xl">PenWebAI</span>
+                <p class="text-gray-400 text-sm mt-2">© 2025 PenWebAI. All rights reserved.</p>
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://x.com/davi1337_" class="text-gray-400 hover:text-white transition-colors">Twitter</a>
+                <a href="https://github.com/PenWebAI" class="text-gray-400 hover:text-white transition-colors">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
